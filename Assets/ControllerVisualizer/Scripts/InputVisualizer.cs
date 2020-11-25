@@ -16,7 +16,7 @@ namespace ControllerVisualizer
 
         [Tooltip("If multiple controls match 'Control Path' at runtime, this property decides "
             + "which control to visualize from the list of candidates. It is a zero-based index.")]
-        public int m_ControlIndex;
+        public int deviceId;
 
         [SerializeField] private InputAction press = null;
         [SerializeField][Range(1, 2)] private float bigger = 1;
@@ -64,19 +64,21 @@ namespace ControllerVisualizer
 
         private void OnPressPerformed(InputAction.CallbackContext ctx)
         {
+            if (press.activeControl.device.deviceId != deviceId) return;
             SwapColor();
-            Debug.Log(press.activeControl.device.deviceId);
             this.transform.localScale = this.transform.localScale * bigger;
         }
 
         private void OnPressCanceled()
         {
+            if (press.activeControl.device.deviceId != deviceId) return;
             SwapColor();
             this.transform.localScale = this.transform.localScale / bigger;   
         }
 
         private void OnTriggerPerformed(float value)
         {
+            if (trigger.activeControl.device.deviceId != deviceId) return;
             this.slider.value = value;
         }
 
@@ -87,14 +89,16 @@ namespace ControllerVisualizer
             activatedColor = spr.color;
             spr.color = color;
         }
-
+    
         private void OnStickPerformed(Vector2 value)
         {
+            if (stick.activeControl.device.deviceId != deviceId) return;
             Vector3 position = this.transform.parent.position;
             this.transform.position = new Vector3(position.x + (value.x * range * transform.parent.parent.localScale.x), position.y + (value.y * range * transform.parent.parent.localScale.x), position.z);
         }
 
         private void OnDrawGizmosSelected() {
+            if(range == 0) return;
             Gizmos.DrawWireSphere(transform.position, range * transform.parent.parent.localScale.x);
         }
     }

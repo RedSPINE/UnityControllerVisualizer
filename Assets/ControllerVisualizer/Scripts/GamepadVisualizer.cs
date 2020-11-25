@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace ControllerVisualizer
 {
-    public class Gamepad : MonoBehaviour
+    public class GamepadVisualizer : MonoBehaviour
     {
         public int controlIndex
         {
@@ -22,9 +23,10 @@ namespace ControllerVisualizer
         private void ResolveControl()
         {
             InputVisualizer[] visualizers = GetComponentsInChildren<InputVisualizer>();
+            var deviceId = Gamepad.all[m_ControlIndex].deviceId;
             foreach (InputVisualizer visualizer in visualizers)
             {
-                visualizer.m_ControlIndex = this.m_ControlIndex;
+                visualizer.deviceId = deviceId;
             }
         }
     }
