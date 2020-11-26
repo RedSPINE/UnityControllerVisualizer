@@ -29,7 +29,7 @@ namespace ControllerVisualizer
             var gamepads = Gamepad.all;
             if (gamepads.Count <= this.controlIndex) {
                 unboundCache.SetActive(true);
-                throw new System.Exception("Not enough gamepads detected. Please connect more gamepads.");
+                return;
             }
             var deviceId = gamepads[m_ControlIndex].deviceId;
             unboundCache.SetActive(false);
