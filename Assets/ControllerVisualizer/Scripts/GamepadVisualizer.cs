@@ -5,7 +5,10 @@ namespace ControllerVisualizer
 {
     public class GamepadVisualizer : MonoBehaviour
     {
-        [SerializeField] private GameObject unboundCache = default;
+        [SerializeField] private GameObject unboundCache = null;
+        [SerializeField] private Animator centralLight = null;
+
+        private InputVisualizer[] visualizers;
 
         public int controlIndex
         {
@@ -16,27 +19,35 @@ namespace ControllerVisualizer
                 ResolveControl();
             }
         }
+        [Tooltip("If multiple controls match 'Control Path' at runtime, this property decides "
+            + "which control to visualize from the list of candidates. It is a zero-based index.")]
         [SerializeField] private int m_ControlIndex;
 
-        private void Awake() {
+        private void OnEnable() {
+            visualizers = GetComponentsInChildren<InputVisualizer>();
             ResolveControl();
             InputSystem.onDeviceChange += (device, change) => ResolveControl();
         }
 
         private void ResolveControl()
         {
-            InputVisualizer[] visualizers = GetComponentsInChildren<InputVisualizer>();
             var gamepads = Gamepad.all;
+
             if (gamepads.Count <= this.controlIndex) {
-                unboundCache.SetActive(true);
+                if (!this.unboundCache.activeSelf) Debug.Log($"Controller {this.controlIndex+1} disconnected.");
+                unboundCache?.SetActive(true);
                 return;
             }
+
             var deviceId = gamepads[m_ControlIndex].deviceId;
-            unboundCache.SetActive(false);
-            foreach (InputVisualizer visualizer in visualizers)
+            if (unboundCache.activeSelf) 
             {
-                visualizer.deviceId = deviceId;
+                centralLight.SetTrigger("Flash");
+                unboundCache?.SetActive(false);
+                Debug.Log($"Controller {this.controlIndex+1} connected.");        
             }
+            foreach (InputVisualizer visualizer in visualizers)
+                visualizer.deviceId = deviceId;
         }
     }
 }
