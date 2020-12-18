@@ -16,36 +16,46 @@ namespace ControllerVisualizer
             set
             {
                 m_ControlIndex = value;
-                ResolveControl();
+                ResolveControls();
             }
         }
+
         [Tooltip("If multiple controls match 'Control Path' at runtime, this property decides "
             + "which control to visualize from the list of candidates. It is a zero-based index.")]
         [SerializeField] private int m_ControlIndex;
 
         private void OnEnable() {
             visualizers = GetComponentsInChildren<InputVisualizer>();
-            ResolveControl();
-            InputSystem.onDeviceChange += (device, change) => ResolveControl();
         }
 
-        private void ResolveControl()
+        // Activate and match controls if it matches a gamepad
+        public void ResolveControls()
         {
-            var gamepads = Gamepad.all;
-
-            if (gamepads.Count <= this.controlIndex) {
-                if (!this.unboundCache.activeSelf) Debug.Log($"Controller {this.controlIndex+1} disconnected.");
-                unboundCache?.SetActive(true);
+            var gamepad = ControllerManager.Instance.gamepads[m_ControlIndex];
+            // No gamepad affiliated
+            if (gamepad == null)
+            {
+                unboundCache.SetActive(true);
+                UpdateVisualizers(0);
                 return;
             }
+            // found matching gamepad
+            var deviceId = gamepad.deviceId;
+            if (unboundCache.activeSelf)
+                Activate();
+            UpdateVisualizers(deviceId);
+        }
 
-            var deviceId = gamepads[m_ControlIndex].deviceId;
-            if (unboundCache.activeSelf) 
-            {
-                centralLight.SetTrigger("Flash");
-                unboundCache?.SetActive(false);
-                Debug.Log($"Controller {this.controlIndex+1} connected.");        
-            }
+        // Plays a little animation when connecting
+        private void Activate()
+        {
+            centralLight.SetTrigger("Flash");
+            unboundCache?.SetActive(false);
+        }
+
+        // Goes throughout all child visualizers to set their tracked device
+        private void UpdateVisualizers(int deviceId)
+        {
             foreach (InputVisualizer visualizer in visualizers)
                 visualizer.deviceId = deviceId;
         }
